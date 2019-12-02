@@ -29,7 +29,7 @@ export function updateDomProperties(dom, prevProps, nextProps) {
     .filter(isAttribute)
     .filter(isNew(prevProps, nextProps))
     .forEach(name => {
-      dom[name] = nextProps[name];
+      dom[name] = nextProps[name]; // 修改 state 走这里
     });
 
   // Set style
