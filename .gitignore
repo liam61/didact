@@ -1,8 +1,3 @@
-dist
 node_modules
-npm-debug.log
-notes.txt
-codepen
-*.bak
-.DS_Store
 yarn.lock
+.DS_Store

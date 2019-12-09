@@ -1,6 +1,6 @@
 {
   "presets": [
-    "@babel/preset-react"
+    "@babel/preset-react",
   ],
   "plugins": [
     [
@@ -8,6 +8,6 @@
       {
         "loose": true
       }
-    ]
+    ],
   ]
 }
