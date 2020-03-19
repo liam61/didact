@@ -5,9 +5,7 @@ function createElement(type, props, ...children) {
     props: {
       ...props,
       children: children.map(child =>
-        typeof child === "object"
-          ? child
-          : createTextElement(child)
+        typeof child === 'object' ? child : createTextElement(child),
       ),
     },
   }
@@ -15,7 +13,7 @@ function createElement(type, props, ...children) {
 
 function createTextElement(text) {
   return {
-    type: "TEXT_ELEMENT",
+    type: 'TEXT_ELEMENT',
     props: {
       nodeValue: text, // TextNode 类型直接预设 nodeValue
       children: [],
@@ -25,17 +23,15 @@ function createTextElement(text) {
 
 function createDom(fiber) {
   const dom =
-    fiber.type == "TEXT_ELEMENT"
-      ? document.createTextNode("")
-      : document.createElement(fiber.type)
+    fiber.type == 'TEXT_ELEMENT' ? document.createTextNode('') : document.createElement(fiber.type)
 
   updateDom(dom, {}, fiber.props)
 
   return dom
 }
 
-const isEvent = key => key.startsWith("on")
-const isProperty = key => key !== "children" && !isEvent(key)
+const isEvent = key => key.startsWith('on')
+const isProperty = key => key !== 'children' && !isEvent(key)
 const isNew = (prev, next) => key => prev[key] !== next[key]
 const isGone = (prev, next) => key => !(key in next)
 
@@ -43,19 +39,10 @@ function updateDom(dom, prevProps, nextProps) {
   // Remove old or changed event listeners
   Object.keys(prevProps)
     .filter(isEvent)
-    .filter(
-      key =>
-        !(key in nextProps) ||
-        isNew(prevProps, nextProps)(key)
-    )
+    .filter(key => !(key in nextProps) || isNew(prevProps, nextProps)(key))
     .forEach(name => {
-      const eventType = name
-        .toLowerCase()
-        .substring(2)
-      dom.removeEventListener(
-        eventType,
-        prevProps[name]
-      )
+      const eventType = name.toLowerCase().substring(2)
+      dom.removeEventListener(eventType, prevProps[name])
     })
 
   // Remove old properties
@@ -63,7 +50,7 @@ function updateDom(dom, prevProps, nextProps) {
     .filter(isProperty)
     .filter(isGone(prevProps, nextProps))
     .forEach(name => {
-      dom[name] = ""
+      dom[name] = ''
     })
 
   // Set new or changed properties
@@ -80,13 +67,8 @@ function updateDom(dom, prevProps, nextProps) {
     .filter(isEvent)
     .filter(isNew(prevProps, nextProps))
     .forEach(name => {
-      const eventType = name
-        .toLowerCase()
-        .substring(2)
-      dom.addEventListener(
-        eventType,
-        nextProps[name]
-      )
+      const eventType = name.toLowerCase().substring(2)
+      dom.addEventListener(eventType, nextProps[name])
     })
 }
 
@@ -112,21 +94,15 @@ function commitWork(fiber) {
   const domParent = domParentFiber.dom
 
   // 组件 fiber 的 dom 不存在，忽略即可
-  if (
-    fiber.effectTag === "PLACEMENT" &&
-    fiber.dom != null
-  ) {
+  if (fiber.effectTag === 'PLACEMENT' && fiber.dom != null) {
     domParent.appendChild(fiber.dom)
-  } else if (
-    fiber.effectTag === "UPDATE" &&
-    fiber.dom != null
-  ) {
+  } else if (fiber.effectTag === 'UPDATE' && fiber.dom != null) {
     updateDom(
       fiber.dom,
       fiber.alternate.props, // prevProps
-      fiber.props // nextProps
+      fiber.props, // nextProps
     )
-  } else if (fiber.effectTag === "DELETION") {
+  } else if (fiber.effectTag === 'DELETION') {
     commitDeletion(fiber, domParent)
   }
 
@@ -166,9 +142,7 @@ let deletions = null
 function workLoop(deadline) {
   let shouldYield = false
   while (nextUnitOfWork && !shouldYield) {
-    nextUnitOfWork = performUnitOfWork(
-      nextUnitOfWork
-    )
+    nextUnitOfWork = performUnitOfWork(nextUnitOfWork)
     shouldYield = deadline.timeRemaining() < 1
   }
 
@@ -182,8 +156,7 @@ function workLoop(deadline) {
 requestIdleCallback(workLoop)
 
 function performUnitOfWork(fiber) {
-  const isFunctionComponent =
-    fiber.type instanceof Function
+  const isFunctionComponent = fiber.type instanceof Function
   if (isFunctionComponent) {
     // 组件
     updateFunctionComponent(fiber)
@@ -224,9 +197,7 @@ function useState(initial) {
   // 由 updateFunctionComponent，执行 type 进入
   // alternate 即 oldFiber 是在 parent fiber reconcileChildren 时赋值的
   const oldHook =
-    wipFiber.alternate &&
-    wipFiber.alternate.hooks &&
-    wipFiber.alternate.hooks[hookIndex]
+    wipFiber.alternate && wipFiber.alternate.hooks && wipFiber.alternate.hooks[hookIndex]
   const hook = {
     state: oldHook ? oldHook.state : initial,
     queue: [],
@@ -240,10 +211,7 @@ function useState(initial) {
   })
 
   const setState = action => {
-    const wrapAction =
-      typeof action === "function"
-        ? action
-        : () => action
+    const wrapAction = typeof action === 'function' ? action : () => action
     hook.queue.push(wrapAction)
     // 从 alternateRoot 开始 render
     wipRoot = {
@@ -270,22 +238,15 @@ function updateHostComponent(fiber) {
 // diff and link children fiber
 function reconcileChildren(wipFiber, elements) {
   let index = 0
-  let oldFiber =
-    wipFiber.alternate && wipFiber.alternate.child
+  let oldFiber = wipFiber.alternate && wipFiber.alternate.child
   let prevSibling = null
 
-  while (
-    index < elements.length ||
-    oldFiber != null
-  ) {
+  while (index < elements.length || oldFiber != null) {
     // TODO: map 之后 element 为数组，不能正确赋值 newFiber
     const element = elements[index]
     let newFiber = null
 
-    const sameType =
-      oldFiber &&
-      element &&
-      element.type == oldFiber.type // newFiber 创建完后，element 和 oldFiber 都会向兄弟节点移动
+    const sameType = oldFiber && element && element.type == oldFiber.type // newFiber 创建完后，element 和 oldFiber 都会向兄弟节点移动
 
     if (sameType) {
       newFiber = {
@@ -294,7 +255,7 @@ function reconcileChildren(wipFiber, elements) {
         dom: oldFiber.dom,
         parent: wipFiber,
         alternate: oldFiber, // 保存 oldFiber 备用
-        effectTag: "UPDATE",
+        effectTag: 'UPDATE',
       }
     }
     if (element && !sameType) {
@@ -304,12 +265,12 @@ function reconcileChildren(wipFiber, elements) {
         dom: null,
         parent: wipFiber,
         alternate: null,
-        effectTag: "PLACEMENT",
+        effectTag: 'PLACEMENT',
       }
     }
     // element 为空，同时 oldFiber 存在时，则 delete
     if (oldFiber && !sameType) {
-      oldFiber.effectTag = "DELETION"
+      oldFiber.effectTag = 'DELETION'
       deletions.push(oldFiber)
     }
 
