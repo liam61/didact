@@ -228,6 +228,22 @@ function useState(initial) {
   return [hook.state, setState]
 }
 
+function useEffect(callback, deps = []) {
+  const oldHook =
+    wipFiber.alternate && wipFiber.alternate.hooks && wipFiber.alternate.hooks[hookIndex]
+  const hook = { deps }
+
+  const oldDeps = oldHook ? oldHook.deps : []
+  const hasChange = deps.some((dep, i) => dep !== oldDeps[i])
+
+  if (hasChange) {
+    callback()
+  }
+
+  wipFiber.hooks.push(hook)
+  hookIndex++
+}
+
 function updateHostComponent(fiber) {
   if (!fiber.dom) {
     fiber.dom = createDom(fiber)
@@ -294,6 +310,7 @@ const Didact = {
   createElement,
   render,
   useState,
+  useEffect,
 }
 
 export default Didact
